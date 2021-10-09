@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+  push:
+    branches:
+      - main
+      - dev*
+    paths:
+      - "**/*.patch"
+      - ".github/workflows/*.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "**/*.patch"
+      - ".github/workflows/*.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux/archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          pacman -Syu --needed --noconfirm patch python fontforge curl jq zip p7zip openssl
+
+      - name: Get Sarasa Gothic
+        run: |
+          LASTEST_TAG="$(curl -sL "https://api.github.com/repos/be5invis/Sarasa-Gothic/releases" | jq -r ".[0].tag_name")"
+          LASTEST_TAG=${LASTEST_TAG:1}
+          curl -L https://github.com/be5invis/Sarasa-Gothic/releases/download/v${LASTEST_TAG}/sarasa-gothic-ttf-${LASTEST_TAG}.7z -o sarasa-gothic-ttf.7z
+          7z x -osarasa-gothic sarasa-gothic-ttf.7z
+
+      - name: Get Nerd Fonts
+        run: |
+          LASTEST_TAG="$(curl -sL "https://api.github.com/repos/ryanoasis/nerd-fonts/releases" | jq -r ".[0].tag_name")"
+          LASTEST_TAG=${LASTEST_TAG:1}
+          curl -L https://github.com/ryanoasis/nerd-fonts/archive/refs/tags/v${LASTEST_TAG}.zip -o nerd-fonts.7z
+          7z x nerd-fonts.7z
+          mv nerd-fonts-${LASTEST_TAG} nerd-fonts
+
+      - name: Patch nerd-fonts
+        run: |
+          patch ${GITHUB_WORKSPACE}/nerd-fonts/font-patcher ${GITHUB_WORKSPACE}/font-patcher.patch
+
+      - name: Patch Sarasa Gothic Term SC
+        run: |
+          mkdir assets
+          for FILE in `ls sarasa-gothic | grep sarasa-term-sc-`
+          do
+            ${GITHUB_WORKSPACE}/nerd-fonts/font-patcher -l --powerline --powerlineextra --fontawesome --fontawesomeextension --fontlogos --octicons ${GITHUB_WORKSPACE}/sarasa-gothic/${FILE} --out ${GITHUB_WORKSPACE}/assets
+          done
+
+      - name: Create ZIP archive
+        if: github.event_name == 'release'
+        run: |
+          zip -9vr ${GITHUB_WORKSPACE}/sarasa-gothic-term-sc-nerd-ttf.zip ./assets/*
+          FILE=${GITHUB_WORKSPACE}/sarasa-gothic-term-sc-nerd-ttf.zip
+          DGST=$FILE.dgst
+          for METHOD in {"md5","sha1","sha256","sha512"}
+          do
+            openssl dgst -$METHOD $FILE | sed 's/([^)]*)//g' >>$DGST
+          done
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: sarasa-gothic-term-sc-nerd-ttf
+          path: |
+            ./assets/*
+
+      - name: Upload to release
+        uses: svenstaro/upload-release-action@v2
+        if: github.event_name == 'release'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./sarasa-gothic-term-sc-nerd-ttf.zip*
+          tag: ${{ github.ref }}
+          file_glob: true
