@@ -29,22 +29,46 @@ jobs:
         run: |
           pacman -Syu --needed --noconfirm patch python fontforge curl jq zip p7zip openssl
 
-      - name: Get Sarasa Gothic
+      - name: Get tag of Sarasa Gothic and Nerd Fonts
         run: |
-          LASTEST_TAG="$(curl -sL "https://api.github.com/repos/be5invis/Sarasa-Gothic/releases" | jq -r ".[0].tag_name")"
-          LASTEST_TAG=${LASTEST_TAG:1}
-          curl -L https://github.com/be5invis/Sarasa-Gothic/releases/download/v${LASTEST_TAG}/sarasa-gothic-ttf-${LASTEST_TAG}.7z -o sarasa-gothic-ttf.7z
+          SARASA_TAG="$(curl -sL "https://api.github.com/repos/be5invis/Sarasa-Gothic/releases" | jq -r ".[0].tag_name")"
+          SARASA_TAG=${SARASA_TAG:1}
+          echo "SARASA_TAG=$SARASA_TAG" >> $GITHUB_ENV
+          NERD_TAG="$(curl -sL "https://api.github.com/repos/ryanoasis/nerd-fonts/releases" | jq -r ".[0].tag_name")"
+          NERD_TAG=${NERD_TAG:1}
+          echo "NERD_TAG=$NERD_TAG" >> $GITHUB_ENV
+
+      - name: Cache Sarasa Gothic
+        id: cache-sarasa
+        uses: actions/cache@v2
+        with:
+          key: sarasa-gothic-${{ env.SARASA_TAG }}
+          path: ./sarasa-gothic-ttf.7z
+
+      - name: Cache Nerd Fonts
+        id: cache-nerd
+        uses: actions/cache@v2
+        with:
+          key: nerd-fonts-${{ env.NERD_TAG }}
+          path: ./nerd-fonts.7z
+
+      - name: Download Sarasa Gothic
+        if: steps.cache-sarasa.outputs.cache-hit != 'true'
+        run: |
+          curl -L https://github.com/be5invis/Sarasa-Gothic/releases/download/v${{ env.SARASA_TAG }}/sarasa-gothic-ttf-${{ env.SARASA_TAG }}.7z -o sarasa-gothic-ttf.7z
+
+      - name: Download Nerd Fonts
+        if: steps.cache-nerd.outputs.cache-hit != 'true'
+        run: |
+          curl -L https://github.com/ryanoasis/nerd-fonts/archive/refs/tags/v${{ env.NERD_TAG }}.zip -o nerd-fonts.7z
+
+      - name: Extract Sarasa Gothic and Nerd Fonts
+        run: |
           7z x -osarasa-gothic sarasa-gothic-ttf.7z
-
-      - name: Get Nerd Fonts
-        run: |
-          LASTEST_TAG="$(curl -sL "https://api.github.com/repos/ryanoasis/nerd-fonts/releases" | jq -r ".[0].tag_name")"
-          LASTEST_TAG=${LASTEST_TAG:1}
-          curl -L https://github.com/ryanoasis/nerd-fonts/archive/refs/tags/v${LASTEST_TAG}.zip -o nerd-fonts.7z
           7z x nerd-fonts.7z
-          mv nerd-fonts-${LASTEST_TAG} nerd-fonts
+          mv nerd-fonts-${{ env.NERD_TAG }} nerd-fonts
 
-      - name: Patch nerd-fonts
+      - name: Patch Nerd Fonts
         run: |
           patch ${GITHUB_WORKSPACE}/nerd-fonts/font-patcher ${GITHUB_WORKSPACE}/font-patcher.patch
 
@@ -66,9 +90,9 @@ jobs:
           DGST=$FILE.dgst
           for METHOD in {"md5","sha1","sha256","sha512"}
           do
-            openssl dgst -$METHOD $FILE | sed 's/([^)]*)//g' >>$DGST
+            openssl dgst -$METHOD $FILE | sed 's/([^)]*)//g' >> $DGST
           done
-      
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
