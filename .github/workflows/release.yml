@@ -49,7 +49,7 @@ jobs:
         uses: actions/cache@v2
         with:
           key: nerd-fonts-${{ env.NERD_TAG }}
-          path: ./nerd-fonts.7z
+          path: ./nerd-fonts.zip
 
       - name: Download Sarasa Gothic
         if: steps.cache-sarasa.outputs.cache-hit != 'true'
@@ -59,12 +59,12 @@ jobs:
       - name: Download Nerd Fonts
         if: steps.cache-nerd.outputs.cache-hit != 'true'
         run: |
-          curl -L https://github.com/ryanoasis/nerd-fonts/archive/refs/tags/${{ env.NERD_TAG }}.zip -o nerd-fonts.7z
+          curl -L https://github.com/ryanoasis/nerd-fonts/archive/refs/tags/${{ env.NERD_TAG }}.zip -o nerd-fonts.zip
 
       - name: Extract Sarasa Gothic and Nerd Fonts
         run: |
           7z x -osarasa-gothic sarasa-gothic-ttf.7z
-          7z x nerd-fonts.7z
+          7z x nerd-fonts.zip
           mv nerd-fonts-${{ env.NERD_TAG }} nerd-fonts
 
       - name: Patch Nerd Fonts
