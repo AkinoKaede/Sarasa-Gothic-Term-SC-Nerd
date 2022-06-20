@@ -7,16 +7,15 @@
 >         segs = segs[:-1] + ["nerd"] + segs[-1:]
 >         self.output_file_name = "-".join(segs)
 >  
-109c113
+126c130
 <             self.sourceFont.generate(self.args.outputdir + "/" + self.sourceFont.fullname + self.extension, flags=(str('opentype'), str('PfEd-comments')))
 ---
 >             self.sourceFont.generate(self.args.outputdir + "/" + self.output_file_name + self.extension, flags=(str('opentype'), str('PfEd-comments')))
-116c120
+133c137
 <             subprocess.call([self.args.postprocess, self.args.outputdir + "/" + self.sourceFont.fullname + self.extension])
 ---
 >             subprocess.call([self.args.postprocess, self.args.outputdir + "/" + self.output_file_name + self.extension])
-225,249c229
-<             # NOTE not all symbol fonts have appended their suffix here
+245,271c249
 <             if self.args.fontawesome:
 <                 additionalFontNameSuffix += " A"
 <                 verboseAdditionalFontNameSuffix += " Plus Font Awesome"
@@ -29,6 +28,9 @@
 <             if self.args.powersymbols:
 <                 additionalFontNameSuffix += " PS"
 <                 verboseAdditionalFontNameSuffix += " Plus Power Symbols"
+<             if self.args.codicons:
+<                 additionalFontNameSuffix += " C"
+<                 verboseAdditionalFontNameSuffix += " Plus Codicons"
 <             if self.args.pomicons:
 <                 additionalFontNameSuffix += " P"
 <                 verboseAdditionalFontNameSuffix += " Plus Pomicons"
@@ -43,11 +45,11 @@
 <                 verboseAdditionalFontNameSuffix += " Plus Weather Icons"
 ---
 >             pass
-387c367
+417c395
 <         self.sourceFont.familyname = " ".join(familyname.split())
 ---
 >         self.sourceFont.familyname = "Sarasa Term SC Nerd"
-389c369,379
+419c397,407
 <         self.sourceFont.fontname   = " ".join(fontname.split())
 ---
 >         style = self.sourceFont.fullname.split()[3:-1]
@@ -61,7 +63,7 @@
 >         self.sourceFont.appendSFNTName(str("English (US)"), str("Compatible Full"), self.sourceFont.fullname)
 >         self.sourceFont.appendSFNTName(str("English (US)"), str("SubFamily"), subFamily)
 >         self.sourceFont.appendSFNTName(str("English (US)"), str("UniqueID"), self.sourceFont.fullname)
-391,394d380
+421,424d408
 <         self.sourceFont.appendSFNTName(str('English (US)'), str('Preferred Family'), self.sourceFont.familyname)
 <         self.sourceFont.appendSFNTName(str('English (US)'), str('Family'), self.sourceFont.familyname)
 <         self.sourceFont.appendSFNTName(str('English (US)'), str('Compatible Full'), self.sourceFont.fullname)
