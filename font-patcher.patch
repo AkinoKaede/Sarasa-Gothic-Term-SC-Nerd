@@ -50,7 +50,7 @@
 <         self.sourceFont.familyname = " ".join(familyname.split())
 ---
 >         self.sourceFont.familyname = "Sarasa Term SC Nerd"
-419c397,407
+419c397,412
 <         self.sourceFont.fontname   = " ".join(fontname.split())
 ---
 >         style = self.sourceFont.fullname.split()[3:-1]
@@ -64,7 +64,12 @@
 >         self.sourceFont.appendSFNTName(str("English (US)"), str("Compatible Full"), self.sourceFont.fullname)
 >         self.sourceFont.appendSFNTName(str("English (US)"), str("SubFamily"), subFamily)
 >         self.sourceFont.appendSFNTName(str("English (US)"), str("UniqueID"), self.sourceFont.fullname)
-421,424d408
+>         
+>         # Debug
+>         print(self.sourceFont.familyname)
+>         print(self.sourceFont.fullname)
+>         print(self.sourceFont.fontname)
+421,424d413
 <         self.sourceFont.appendSFNTName(str('English (US)'), str('Preferred Family'), self.sourceFont.familyname)
 <         self.sourceFont.appendSFNTName(str('English (US)'), str('Family'), self.sourceFont.familyname)
 <         self.sourceFont.appendSFNTName(str('English (US)'), str('Compatible Full'), self.sourceFont.fullname)
