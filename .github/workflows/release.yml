@@ -35,7 +35,6 @@ jobs:
           SARASA_TAG=${SARASA_TAG:1}
           echo "SARASA_TAG=$SARASA_TAG" >> $GITHUB_ENV
           NERD_TAG="$(curl -sL "https://api.github.com/repos/ryanoasis/nerd-fonts/releases" | jq -r ".[0].tag_name")"
-          NERD_TAG=${NERD_TAG:1}
           echo "NERD_TAG=$NERD_TAG" >> $GITHUB_ENV
 
       - name: Cache Sarasa Gothic
@@ -60,7 +59,7 @@ jobs:
       - name: Download Nerd Fonts
         if: steps.cache-nerd.outputs.cache-hit != 'true'
         run: |
-          curl -L https://github.com/ryanoasis/nerd-fonts/archive/refs/tags/v${{ env.NERD_TAG }}.zip -o nerd-fonts.7z
+          curl -L https://github.com/ryanoasis/nerd-fonts/archive/refs/tags/${{ env.NERD_TAG }}.zip -o nerd-fonts.7z
 
       - name: Extract Sarasa Gothic and Nerd Fonts
         run: |
