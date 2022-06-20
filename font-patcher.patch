@@ -1,137 +1,68 @@
-diff --git a/font-patcher b/font-patcher
-index b30b0a0..305b403 100755
---- a/font-patcher
-+++ b/font-patcher
-@@ -6,7 +6,7 @@
- from __future__ import absolute_import, print_function, unicode_literals
- 
- version = "2.1.0"
--projectName = "Nerd Fonts"
-+projectName = "Nerds"
- projectNameAbbreviation = "NF"
- projectNameSingular = projectName[:-1]
- 
-@@ -66,6 +66,10 @@ class font_patcher:
-         else:
-             self.extension = '.' + self.args.extension
- 
-+        segs = os.path.basename(self.args.font).replace(self.extension, "").split("-")
-+        segs = segs[:-1] + ["nerd"] + segs[-1:]
-+        self.output_file_name = "-".join(segs)
-+ 
- 
-     def patch(self):
-         if self.args.single:
-@@ -105,11 +109,11 @@ class font_patcher:
-         print("\nDone with Patch Sets, generating font...")
- 
-         # the `PfEd-comments` flag is required for Fontforge to save '.comment' and '.fontlog'.
--        self.sourceFont.generate(self.args.outputdir + "/" + self.sourceFont.fullname + self.extension, flags=(str('opentype'), str('PfEd-comments')))
-+        self.sourceFont.generate(self.args.outputdir + "/" + self.output_file_name + self.extension, flags=(str('opentype'), str('PfEd-comments')))
-         print("\nGenerated: {}".format(self.sourceFont.fullname))
- 
-         if self.args.postprocess:
--            subprocess.call([self.args.postprocess, self.args.outputdir + "/" + self.sourceFont.fullname + self.extension])
-+            subprocess.call([self.args.postprocess, self.args.outputdir + "/" + self.output_file_name + self.extension])
-             print("\nPost Processed: {}".format(self.sourceFont.fullname))
- 
- 
-@@ -217,31 +221,7 @@ class font_patcher:
-         else:
-             additionalFontNameSuffix = verboseAdditionalFontNameSuffix
-         if not self.args.complete:
--            # NOTE not all symbol fonts have appended their suffix here
--            if self.args.fontawesome:
--                additionalFontNameSuffix += " A"
--                verboseAdditionalFontNameSuffix += " Plus Font Awesome"
--            if self.args.fontawesomeextension:
--                additionalFontNameSuffix += " AE"
--                verboseAdditionalFontNameSuffix += " Plus Font Awesome Extension"
--            if self.args.octicons:
--                additionalFontNameSuffix += " O"
--                verboseAdditionalFontNameSuffix += " Plus Octicons"
--            if self.args.powersymbols:
--                additionalFontNameSuffix += " PS"
--                verboseAdditionalFontNameSuffix += " Plus Power Symbols"
--            if self.args.pomicons:
--                additionalFontNameSuffix += " P"
--                verboseAdditionalFontNameSuffix += " Plus Pomicons"
--            if self.args.fontlinux:
--                additionalFontNameSuffix += " L"
--                verboseAdditionalFontNameSuffix += " Plus Font Logos (Font Linux)"
--            if self.args.material:
--                additionalFontNameSuffix += " MDI"
--                verboseAdditionalFontNameSuffix += " Plus Material Design Icons"
--            if self.args.weather:
--                additionalFontNameSuffix += " WEA"
--                verboseAdditionalFontNameSuffix += " Plus Weather Icons"
-+            pass
- 
-         # if all source glyphs included simplify the name
-         else:
-@@ -366,14 +346,59 @@ class font_patcher:
-         fontname   = replace_font_name(fontname,   additionalFontNameReplacements2)
- 
-         # replace any extra whitespace characters:
--        self.sourceFont.familyname = " ".join(familyname.split())
-+        self.sourceFont.familyname = "Sarasa Term SC Nerd"
-         self.sourceFont.fullname   = " ".join(fullname.split())
--        self.sourceFont.fontname   = " ".join(fontname.split())
-+        style = self.sourceFont.fullname.split()[3:-1]
-+        style = ["regular"] if len(style) == 0 else style
-+        fontname = self.sourceFont.familyname.replace(" ", "") + "-" + "".join(style)
-+        self.sourceFont.fontname   = fontname
-+        self.sourceFont.fullname = self.sourceFont.familyname + " " + "".join(style)
-+        print(self.sourceFont.familyname)
-+        print(self.sourceFont.fullname)
-+        print(self.sourceFont.fontname)
-+
-+        self.sourceFont.appendSFNTName(
-+            str("English (US)"), str("Preferred Family"), self.sourceFont.familyname
-+        )
-+        self.sourceFont.appendSFNTName(
-+            str("English (US)"), str("Family"), self.sourceFont.familyname
-+        )
-+        self.sourceFont.appendSFNTName(
-+            str("English (US)"), str("Compatible Full"), self.sourceFont.fullname
-+        )
-+        self.sourceFont.appendSFNTName(str("English (US)"), str("SubFamily"), subFamily)
-+        self.sourceFont.appendSFNTName(
-+            str("English (US)"), str("UniqueID"), self.sourceFont.fullname
-+        )
-+        self.sourceFont.appendSFNTName(
-+             str("Chinese (PRC)"),
-+             str("Preferred Family"),
-+             self.sourceFont.familyname.replace("Sarasa", "更纱黑体"),
-+        )
-+        self.sourceFont.appendSFNTName(
-+            str("Chinese (PRC)"),
-+            str("Family"),
-+            self.sourceFont.familyname.replace("Sarasa", "更纱黑体"),
-+        )
-+        self.sourceFont.appendSFNTName(
-+            str("Chinese (PRC)"),
-+            str("Fullname"),
-+            self.sourceFont.fullname.replace("Sarasa", "更纱黑体"),
-+        )
-+        self.sourceFont.appendSFNTName(
-+            str("Chinese (PRC)"),
-+            str("Compatible Full"),
-+            self.sourceFont.fullname.replace("Sarasa", "更纱黑体"),
-+        )
-+        self.sourceFont.appendSFNTName(
-+            str("Chinese (PRC)"), str("SubFamily"), subFamily
-+        )
-+        self.sourceFont.appendSFNTName(
-+            str("Chinese (PRC)"),
-+            str("UniqueID"),
-+            self.sourceFont.fullname.replace("Sarasa", "更纱黑体"),
-+        )
- 
--        self.sourceFont.appendSFNTName(str('English (US)'), str('Preferred Family'), self.sourceFont.familyname)
--        self.sourceFont.appendSFNTName(str('English (US)'), str('Family'), self.sourceFont.familyname)
--        self.sourceFont.appendSFNTName(str('English (US)'), str('Compatible Full'), self.sourceFont.fullname)
--        self.sourceFont.appendSFNTName(str('English (US)'), str('SubFamily'), subFamily)
-         self.sourceFont.comment = projectInfo
-         self.sourceFont.fontlog = projectInfo
- 
+9c9
+< projectName = "Nerd Fonts"
+---
+> projectName = "Nerds"
+68a69,72
+>         segs = os.path.basename(self.args.font).replace(self.extension, "").split("-")
+>         segs = segs[:-1] + ["nerd"] + segs[-1:]
+>         self.output_file_name = "-".join(segs)
+>  
+109c113
+<             self.sourceFont.generate(self.args.outputdir + "/" + self.sourceFont.fullname + self.extension, flags=(str('opentype'), str('PfEd-comments')))
+---
+>             self.sourceFont.generate(self.args.outputdir + "/" + self.output_file_name + self.extension, flags=(str('opentype'), str('PfEd-comments')))
+116c120
+<             subprocess.call([self.args.postprocess, self.args.outputdir + "/" + self.sourceFont.fullname + self.extension])
+---
+>             subprocess.call([self.args.postprocess, self.args.outputdir + "/" + self.output_file_name + self.extension])
+225,249c229
+<             # NOTE not all symbol fonts have appended their suffix here
+<             if self.args.fontawesome:
+<                 additionalFontNameSuffix += " A"
+<                 verboseAdditionalFontNameSuffix += " Plus Font Awesome"
+<             if self.args.fontawesomeextension:
+<                 additionalFontNameSuffix += " AE"
+<                 verboseAdditionalFontNameSuffix += " Plus Font Awesome Extension"
+<             if self.args.octicons:
+<                 additionalFontNameSuffix += " O"
+<                 verboseAdditionalFontNameSuffix += " Plus Octicons"
+<             if self.args.powersymbols:
+<                 additionalFontNameSuffix += " PS"
+<                 verboseAdditionalFontNameSuffix += " Plus Power Symbols"
+<             if self.args.pomicons:
+<                 additionalFontNameSuffix += " P"
+<                 verboseAdditionalFontNameSuffix += " Plus Pomicons"
+<             if self.args.fontlinux:
+<                 additionalFontNameSuffix += " L"
+<                 verboseAdditionalFontNameSuffix += " Plus Font Logos (Font Linux)"
+<             if self.args.material:
+<                 additionalFontNameSuffix += " MDI"
+<                 verboseAdditionalFontNameSuffix += " Plus Material Design Icons"
+<             if self.args.weather:
+<                 additionalFontNameSuffix += " WEA"
+<                 verboseAdditionalFontNameSuffix += " Plus Weather Icons"
+---
+>             pass
+387c367
+<         self.sourceFont.familyname = " ".join(familyname.split())
+---
+>         self.sourceFont.familyname = "Sarasa Term SC Nerd"
+389c369,379
+<         self.sourceFont.fontname   = " ".join(fontname.split())
+---
+>         style = self.sourceFont.fullname.split()[3:-1]
+>         style = ["regular"] if len(style) == 0 else style
+>         fontname = self.sourceFont.familyname.replace(" ", "") + "-" + "".join(style)
+>         self.sourceFont.fontname   = fontname
+>         self.sourceFont.fullname = self.sourceFont.familyname + " " + "".join(style)
+> 
+>         self.sourceFont.appendSFNTName(str("English (US)"), str("Preferred Family"), self.sourceFont.familyname)
+>         self.sourceFont.appendSFNTName(str("English (US)"), str("Family"), self.sourceFont.familyname)
+>         self.sourceFont.appendSFNTName(str("English (US)"), str("Compatible Full"), self.sourceFont.fullname)
+>         self.sourceFont.appendSFNTName(str("English (US)"), str("SubFamily"), subFamily)
+>         self.sourceFont.appendSFNTName(str("English (US)"), str("UniqueID"), self.sourceFont.fullname)
+391,394d380
+<         self.sourceFont.appendSFNTName(str('English (US)'), str('Preferred Family'), self.sourceFont.familyname)
+<         self.sourceFont.appendSFNTName(str('English (US)'), str('Family'), self.sourceFont.familyname)
+<         self.sourceFont.appendSFNTName(str('English (US)'), str('Compatible Full'), self.sourceFont.fullname)
+<         self.sourceFont.appendSFNTName(str('English (US)'), str('SubFamily'), subFamily)
