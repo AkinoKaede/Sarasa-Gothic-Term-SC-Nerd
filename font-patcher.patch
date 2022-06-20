@@ -2,11 +2,12 @@
 < projectName = "Nerd Fonts"
 ---
 > projectName = "Nerds"
-68a69,72
+68a69
+>  
+75a77,79
 >         segs = os.path.basename(self.args.font).replace(self.extension, "").split("-")
 >         segs = segs[:-1] + ["nerd"] + segs[-1:]
 >         self.output_file_name = "-".join(segs)
->  
 126c130
 <             self.sourceFont.generate(self.args.outputdir + "/" + self.sourceFont.fullname + self.extension, flags=(str('opentype'), str('PfEd-comments')))
 ---
