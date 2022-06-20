@@ -44,39 +44,38 @@ jobs:
           key: sarasa-gothic-${{ env.SARASA_TAG }}
           path: ./sarasa-gothic-ttf.7z
 
-      - name: Cache Nerd Fonts
+      - name: Cache Nerd Fonts Font Patcher
         id: cache-nerd
         uses: actions/cache@v2
         with:
           key: nerd-fonts-${{ env.NERD_TAG }}
-          path: ./nerd-fonts.zip
+          path: ./nerd-fonts-font-patcher.zip
 
       - name: Download Sarasa Gothic
         if: steps.cache-sarasa.outputs.cache-hit != 'true'
         run: |
           curl -L https://github.com/be5invis/Sarasa-Gothic/releases/download/v${{ env.SARASA_TAG }}/sarasa-gothic-ttf-${{ env.SARASA_TAG }}.7z -o sarasa-gothic-ttf.7z
 
-      - name: Download Nerd Fonts
+      - name: Download Nerd Fonts Font Patcher
         if: steps.cache-nerd.outputs.cache-hit != 'true'
         run: |
-          curl -L https://github.com/ryanoasis/nerd-fonts/archive/refs/tags/${{ env.NERD_TAG }}.zip -o nerd-fonts.zip
+          curl -L https://github.com/ryanoasis/nerd-fonts/releases/download/${{ env.NERD_TAG }}/FontPatcher.zip -o nerd-fonts-font-patcher.zip
 
-      - name: Extract Sarasa Gothic and Nerd Fonts
+      - name: Extract Sarasa Gothic and Nerd Fonts Font Patcher
         run: |
           7z x -osarasa-gothic sarasa-gothic-ttf.7z
-          7z x nerd-fonts.zip
-          mv nerd-fonts-${{ env.NERD_TAG }} nerd-fonts
+          7z x -onerd-fonts-font-patcher nerd-fonts-font-patcher.zip
 
       - name: Patch Nerd Fonts
         run: |
-          patch ${GITHUB_WORKSPACE}/nerd-fonts/font-patcher ${GITHUB_WORKSPACE}/font-patcher.patch
+          patch ${GITHUB_WORKSPACE}/nerd-fonts-font-patcher/font-patcher ${GITHUB_WORKSPACE}/font-patcher.patch
 
       - name: Patch Sarasa Gothic Term SC
         run: |
           mkdir assets
           for FILE in `ls sarasa-gothic | grep sarasa-term-sc-`
           do
-            ${GITHUB_WORKSPACE}/nerd-fonts/font-patcher -l --powerline --powerlineextra --fontawesome --fontawesomeextension --fontlogos --octicons ${GITHUB_WORKSPACE}/sarasa-gothic/${FILE} --out ${GITHUB_WORKSPACE}/assets
+            ${GITHUB_WORKSPACE}/nerd-fonts-font-patcher/font-patcher -l --powerline --powerlineextra --fontawesome --fontawesomeextension --fontlogos --octicons ${GITHUB_WORKSPACE}/sarasa-gothic/${FILE} --out ${GITHUB_WORKSPACE}/assets
           done
 
       - name: Create ZIP archive
